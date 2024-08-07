@@ -1,11 +1,20 @@
 import { useState } from "react";
 import { db } from "./firebaseConnection"; // Importando o db para inserir dados no Firestore
-import { addDoc, collection, doc, getDoc, setDoc } from "firebase/firestore"; // Importando o setDoc para inserir dados no Firestore
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  getDocs,
+} from "firebase/firestore"; // Importando o setDoc para inserir dados no Firestore
 import "./App.css";
 
 function App() {
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
+
+  const [posts, setPosts] = useState([]); // Criando um estado para armazenar os posts que sera uma lista de posts
 
   async function handleAdd() {
     // Função para adicionar os dados no Firestore, async para aguardar a execução do setDoc e não travar a aplicação, setando os valores de titulo e autor
@@ -37,12 +46,34 @@ function App() {
   }
 
   async function buscarPost() {
-    const postRef = doc(db, "posts", "12345"); // Buscando os dados no Firestore, doc para buscar um documento, passando o db, a coleção e o id do documento
+    // const postRef = doc(db, "posts", "12345"); // Buscando os dados no Firestore, doc para buscar um documento, passando o db, a coleção e o id do documento
 
-    await getDoc(postRef)  // Buscando o documento no Firestore recebendo o postRef
+    // await getDoc(postRef)  // Buscando o documento no Firestore recebendo o postRef
+    //   .then((snapshot) => {
+    //     setAutor(snapshot.data().autor); // Setando o valor do autor com o valor do autor do documento
+    //     setTitulo(snapshot.data().titulo); // Setando o valor do titulo com o valor do titulo do documento
+    //   })
+    //   .catch((error) => {
+    //     console.log("Erro ao buscar os dados: ", error);
+    //   });
+
+    const postsRef = collection(db, "posts"); // Buscando os dados no Firestore, collection para buscar uma coleção, passando o db e o nome da coleção
+
+    await getDocs(postsRef) // Buscando a coleção no Firestore com getDocs recebendo o postsRef
       .then((snapshot) => {
-        setAutor(snapshot.data().autor); // Setando o valor do autor com o valor do autor do documento
-        setTitulo(snapshot.data().titulo); // Setando o valor do titulo com o valor do titulo do documento
+        let lista = []; // Criando uma lista vazia
+
+        snapshot.forEach((doc) => {
+          // Percorrendo os documentos da coleção com forEach e adicionando na lista
+          lista.push({
+            id: doc.id, // Adicionando o id do post na lista
+            // ...doc.data(), // Adicionando os dados do documento na lista
+            titulo: doc.data().titulo, // Adicionando o titulo do post na lista
+            autor: doc.data().autor, // Adicionando o autor do post na lista
+          });
+        });
+
+        setPosts(lista); // Setando o estado de posts na lista
       })
       .catch((error) => {
         console.log("Erro ao buscar os dados: ", error);
@@ -71,6 +102,16 @@ function App() {
         />
         <button onClick={handleAdd}>Cadastrar</button>
         <button onClick={buscarPost}>Buscar post</button>
+        <ul> {/* ul e uma lista nao ordenada */}
+          {posts.map((post) => {    // Percorrendo a lista de posts com map e retornando um li para cada post
+            return (             // Retornando o li com o titulo e autor do post apos percorrer a lista
+              <li key={post.id}>
+                <span>Titulo: {post.titulo} </span> <br/>
+                <span>Autor: {post.autor} </span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );
