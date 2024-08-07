@@ -18,7 +18,6 @@ const firebaseConfig = {      // Configurações do Firebase, que são obtidas n
   
     measurementId: "G-94PJKS3455"
   
-    
   };
 
 const firebaseApp = initializeApp(firebaseConfig);   // Iniciando o Firebase com as configurações do firebaseConfig
