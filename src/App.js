@@ -6,6 +6,7 @@ import {
   doc,
   getDocs,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore"; // Importando o setDoc para inserir dados no Firestore
 import "./App.css";
 
@@ -96,6 +97,19 @@ function App() {
       });
   }
 
+  async function excluirPost(id) {
+    const docRef = doc(db, "posts", id); // Buscando os dados no Firestore, doc para buscar um documento, passando o db, a coleção e o id do documento
+
+    await deleteDoc(docRef) // Deletando os dados no Firestore, deleteDoc para deletar os dados, passando o docRef
+      .then(() => {
+        console.log("Dados excluídos com sucesso!");
+      })
+      .catch((error) => {
+        console.log("Erro ao excluir os dados: ", error);
+      });
+
+  }
+
   return (
     <div className="App">
       <h1>ReactJS + Firebase</h1>
@@ -137,6 +151,7 @@ function App() {
                 <strong>ID do Post: {post.id}</strong> <br />
                 <span>Titulo: {post.titulo} </span> <br />
                 <span>Autor: {post.autor} </span> <br />
+                <button onClick={ () => excluirPost(post.id)} >Excluir Post</button>  
               </li>
             );
           })}
