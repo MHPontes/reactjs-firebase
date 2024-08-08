@@ -4,15 +4,15 @@ import {
   addDoc,
   collection,
   doc,
-  getDoc,
-  setDoc,
   getDocs,
+  updateDoc,
 } from "firebase/firestore"; // Importando o setDoc para inserir dados no Firestore
 import "./App.css";
 
 function App() {
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
+  const [idPost, setIdPost] = useState("");
 
   const [posts, setPosts] = useState([]); // Criando um estado para armazenar os posts que sera uma lista de posts
 
@@ -30,8 +30,7 @@ function App() {
     //   });
     // }
 
-    await addDoc(collection(db, "posts"), {
-      // Adicionando os dados no Firestore, collection para criar uma coleção e addDoc para adicionar os dados
+    await addDoc(collection(db, "posts"), {  // Adicionando os dados no Firestore, collection para criar uma coleção e addDoc para adicionar os dados
       titulo: titulo,
       autor: autor,
     })
@@ -63,8 +62,7 @@ function App() {
       .then((snapshot) => {
         let lista = []; // Criando uma lista vazia
 
-        snapshot.forEach((doc) => {
-          // Percorrendo os documentos da coleção com forEach e adicionando na lista
+        snapshot.forEach((doc) => {   // Percorrendo os documentos da coleção com forEach e adicionando na lista
           lista.push({
             id: doc.id, // Adicionando o id do post na lista
             // ...doc.data(), // Adicionando os dados do documento na lista
@@ -80,11 +78,36 @@ function App() {
       });
   }
 
+  async function editarPost() {
+    const docRef = doc(db, "posts", idPost); // Buscando os dados no Firestore, doc para buscar um documento, passando o db, a coleção e o id do documento
+
+    await updateDoc(docRef, { // Atualizando os dados no Firestore, updateDoc para atualizar os dados, passando o docRef e os dados que serão atualizados
+      titulo: titulo,
+      autor: autor,
+    })
+      .then(() => {
+        console.log("Dados atualizados com sucesso!");
+        setTitulo(""); // Limpando o campo de titulo apos a atualização
+        setAutor(""); // Limpando o campo de autor apos a atualização
+        setIdPost(""); // Limpando o campo de idPost apos a atualização
+      })
+      .catch((error) => {
+        console.log("Erro ao atualizar os dados: ", error);
+      });
+  }
+
   return (
     <div className="App">
       <h1>ReactJS + Firebase</h1>
 
       <div className="container">
+        <label>Id do post:</label>
+        <input
+          type="text"
+          placeholder="Digite o id do post"
+          value={idPost}
+          onChange={(e) => setIdPost(e.target.value)}
+        />
         <label>Titulo:</label>
         <textarea
           type="text"
@@ -102,12 +125,18 @@ function App() {
         />
         <button onClick={handleAdd}>Cadastrar</button>
         <button onClick={buscarPost}>Buscar post</button>
-        <ul> {/* ul e uma lista nao ordenada */}
-          {posts.map((post) => {    // Percorrendo a lista de posts com map e retornando um li para cada post
-            return (             // Retornando o li com o titulo e autor do post apos percorrer a lista
+        <button onClick={editarPost}>Atualizar post</button>
+        <ul>
+          {" "}
+          {/* ul e uma lista nao ordenada */}
+          {posts.map((post) => {
+            // Percorrendo a lista de posts com map e retornando um li para cada post
+            return (
+              // Retornando o li com o titulo e autor do post apos percorrer a lista
               <li key={post.id}>
-                <span>Titulo: {post.titulo} </span> <br/>
-                <span>Autor: {post.autor} </span>
+                <strong>ID do Post: {post.id}</strong> <br />
+                <span>Titulo: {post.titulo} </span> <br />
+                <span>Autor: {post.autor} </span> <br />
               </li>
             );
           })}
