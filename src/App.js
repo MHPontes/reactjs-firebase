@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { db } from "./firebaseConnection"; // Importando o db para inserir dados no Firestore
 import {
   addDoc,
@@ -7,6 +7,7 @@ import {
   getDocs,
   updateDoc,
   deleteDoc,
+  onSnapshot,
 } from "firebase/firestore"; // Importando o setDoc para inserir dados no Firestore
 import "./App.css";
 
@@ -16,6 +17,30 @@ function App() {
   const [idPost, setIdPost] = useState("");
 
   const [posts, setPosts] = useState([]); // Criando um estado para armazenar os posts que sera uma lista de posts
+
+  useEffect(() => {
+    // useEffect e uma função que e disparada toda vez que o componente e montado, passando um array vazio para ser disparado apenas uma vez
+    async function loadPosts() {
+    const unsub = onSnapshot(collection(db, "posts"), (snapshot) => {
+         let listaPost = []; // Criando uma lista vazia
+
+        snapshot.forEach((doc) => {
+          // Percorrendo os documentos da coleção com forEach e adicionando na lista
+          listaPost.push({
+            id: doc.id, // Adicionando o id do post na lista
+            // ...doc.data(), // Adicionando os dados do documento na lista
+            titulo: doc.data().titulo, // Adicionando o titulo do post na lista
+            autor: doc.data().autor, // Adicionando o autor do post na lista
+          });
+        });
+
+        setPosts(listaPost); // Setando o estado de posts na lista
+    })
+  }
+
+    loadPosts();   // Chamando a função loadPosts para carregar os posts no Firestore e setar no estado de posts no useEffect
+
+  }, []);
 
   async function handleAdd() {
     // Função para adicionar os dados no Firestore, async para aguardar a execução do setDoc e não travar a aplicação, setando os valores de titulo e autor
@@ -31,7 +56,8 @@ function App() {
     //   });
     // }
 
-    await addDoc(collection(db, "posts"), {  // Adicionando os dados no Firestore, collection para criar uma coleção e addDoc para adicionar os dados
+    await addDoc(collection(db, "posts"), {
+      // Adicionando os dados no Firestore, collection para criar uma coleção e addDoc para adicionar os dados
       titulo: titulo,
       autor: autor,
     })
@@ -63,7 +89,8 @@ function App() {
       .then((snapshot) => {
         let lista = []; // Criando uma lista vazia
 
-        snapshot.forEach((doc) => {   // Percorrendo os documentos da coleção com forEach e adicionando na lista
+        snapshot.forEach((doc) => {
+          // Percorrendo os documentos da coleção com forEach e adicionando na lista
           lista.push({
             id: doc.id, // Adicionando o id do post na lista
             // ...doc.data(), // Adicionando os dados do documento na lista
@@ -82,7 +109,8 @@ function App() {
   async function editarPost() {
     const docRef = doc(db, "posts", idPost); // Buscando os dados no Firestore, doc para buscar um documento, passando o db, a coleção e o id do documento
 
-    await updateDoc(docRef, { // Atualizando os dados no Firestore, updateDoc para atualizar os dados, passando o docRef e os dados que serão atualizados
+    await updateDoc(docRef, {
+      // Atualizando os dados no Firestore, updateDoc para atualizar os dados, passando o docRef e os dados que serão atualizados
       titulo: titulo,
       autor: autor,
     })
@@ -107,7 +135,6 @@ function App() {
       .catch((error) => {
         console.log("Erro ao excluir os dados: ", error);
       });
-
   }
 
   return (
@@ -151,7 +178,9 @@ function App() {
                 <strong>ID do Post: {post.id}</strong> <br />
                 <span>Titulo: {post.titulo} </span> <br />
                 <span>Autor: {post.autor} </span> <br />
-                <button onClick={ () => excluirPost(post.id)} >Excluir Post</button>  
+                <button onClick={() => excluirPost(post.id)}>
+                  Excluir Post
+                </button>
               </li>
             );
           })}
