@@ -10,7 +10,7 @@ import {
   onSnapshot,
 } from "firebase/firestore"; // Importando o setDoc para inserir dados no Firestore
 import "./App.css";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
 
 function App() {
   const [titulo, setTitulo] = useState("");
@@ -19,6 +19,9 @@ function App() {
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+
+  const [user, setUser] = useState(false);    // Criando um estado para verificar se o usuário esta logado
+  const [userDetails, setUserDetails] = useState({});   // Criando um estado para armazenar os detalhes do usuário
 
   const [posts, setPosts] = useState([]); // Criando um estado para armazenar os posts que sera uma lista de posts
 
@@ -161,9 +164,52 @@ function App() {
       });
   }
 
+  async function logarUsuario() {
+    await signInWithEmailAndPassword(auth, email, senha)
+
+      .then((value) => {
+        console.log("Usuário logado com sucesso!");
+        console.log(value);
+
+        setUserDetails({     // Setando os detalhes do usuário no estado userDetails para serem exibidos na tela
+          uid: value.user.uid,
+          email: value.user.email,
+        });
+        setUser(true);   // Setando o estado de user como true para exibir os detalhes do usuário na tela
+      
+
+        setEmail("");
+        setSenha("");
+      })
+      .catch((error) => {
+
+        if (error.code === "auth/wrong-password") {
+          alert("Senha incorreta!");
+
+        } else if (error.code === "auth/user-not-found") {
+          alert("Usuário não encontrado!");
+        }
+      });
+  }
+
+  async function fazerLogout() {
+    await signOut(auth);   // Função para fazer logout do usuário no Firebase
+
+    setUser(false);   // Setando o estado de user como false para não exibir os detalhes do usuário na tela
+    setUserDetails({});   // Limpando os detalhes do usuário no estado userDetails
+  }
+
   return (
     <div className="App">
       <h1>ReactJS + Firebase</h1>
+
+      {user && (     // Verificando se o usuário esta logado para exibir os detalhes do usuário (user) e true (visualizacao condicional)
+        <div>
+          <strong>Seja bem-vindo(a) (Você esta logado!)</strong> <br />
+          <span> UID: {userDetails.uid} - Email: {userDetails.email}</span> <br />
+          <button onClick={fazerLogout}>Sair da conta</button>
+        </div>
+      )}
 
       <div className="container">
         <h2>Usuarios</h2>
@@ -183,6 +229,7 @@ function App() {
       </div>
 
       <button onClick={novoUsuario}>Cadastrar</button>
+      <button onClick={logarUsuario}>Logar</button>
 
       <br />
       <br />
