@@ -10,7 +10,12 @@ import {
   onSnapshot,
 } from "firebase/firestore"; // Importando o setDoc para inserir dados no Firestore
 import "./App.css";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+} from "firebase/auth";
 
 function App() {
   const [titulo, setTitulo] = useState("");
@@ -20,15 +25,15 @@ function App() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  const [user, setUser] = useState(false);    // Criando um estado para verificar se o usuário esta logado
-  const [userDetails, setUserDetails] = useState({});   // Criando um estado para armazenar os detalhes do usuário
+  const [user, setUser] = useState(false); // Criando um estado para verificar se o usuário esta logado
+  const [userDetails, setUserDetails] = useState({}); // Criando um estado para armazenar os detalhes do usuário
 
   const [posts, setPosts] = useState([]); // Criando um estado para armazenar os posts que sera uma lista de posts
 
   useEffect(() => {
     // useEffect e uma função que e disparada toda vez que o componente e montado, passando um array vazio para ser disparado apenas uma vez
     async function loadPosts() {
-      const unsub = onSnapshot(collection(db, "posts"), (snapshot) => {
+     onSnapshot(collection(db, "posts"), (snapshot) => {
         let listaPost = []; // Criando uma lista vazia
 
         snapshot.forEach((doc) => {
@@ -46,6 +51,28 @@ function App() {
     }
 
     loadPosts(); // Chamando a função loadPosts para carregar os posts no Firestore e setar no estado de posts no useEffect
+  }, []);
+
+  useEffect(() => {
+    async function checkLogin() {
+      onAuthStateChanged(auth, (user) => {
+        // Função para verificar se o usuário esta logado, passando o auth e o user
+        
+        if (user) {  //Se estiver logado
+          setUser(true); // Setando o estado de user como true para exibir os detalhes do usuário na tela
+          setUserDetails({
+            // Setando os detalhes do usuário no estado userDetails para serem exibidos na tela
+            uid: user.uid,
+            email: user.email,
+          });
+        
+        } else {
+          setUser(false); // Setando o estado de user como false para não exibir os detalhes do usuário na tela
+          setUserDetails({}); // Limpando os detalhes do usuário no estado userDetails
+        }
+      });
+    }
+    checkLogin();
   }, []);
 
   async function handleAdd() {
@@ -143,21 +170,18 @@ function App() {
       });
   }
 
-  async function novoUsuario() {     // Função para criar um novo usuário no Firebase
-    await createUserWithEmailAndPassword(auth, email, senha)    // Função para criar um novo usuário no Firebase, passando o email e a senha 
-
+  async function novoUsuario() {
+    // Função para criar um novo usuário no Firebase
+    await createUserWithEmailAndPassword(auth, email, senha) // Função para criar um novo usuário no Firebase, passando o email e a senha
       .then(() => {
-      
-        console.log("Usuário cadastrado com sucesso!");  
+        console.log("Usuário cadastrado com sucesso!");
 
         setEmail("");
         setSenha("");
       })
       .catch((error) => {
-      
         if (error.code === "auth/email-already-in-use") {
           alert("Email já cadastrado!");
-
         } else if (error.code === "auth/weak-password") {
           alert("Senha muito fraca.");
         }
@@ -166,26 +190,23 @@ function App() {
 
   async function logarUsuario() {
     await signInWithEmailAndPassword(auth, email, senha)
-
       .then((value) => {
         console.log("Usuário logado com sucesso!");
         console.log(value);
 
-        setUserDetails({     // Setando os detalhes do usuário no estado userDetails para serem exibidos na tela
+        setUserDetails({
+          // Setando os detalhes do usuário no estado userDetails para serem exibidos na tela
           uid: value.user.uid,
           email: value.user.email,
         });
-        setUser(true);   // Setando o estado de user como true para exibir os detalhes do usuário na tela
-      
+        setUser(true); // Setando o estado de user como true para exibir os detalhes do usuário na tela
 
         setEmail("");
         setSenha("");
       })
       .catch((error) => {
-
         if (error.code === "auth/wrong-password") {
           alert("Senha incorreta!");
-
         } else if (error.code === "auth/user-not-found") {
           alert("Usuário não encontrado!");
         }
@@ -193,20 +214,24 @@ function App() {
   }
 
   async function fazerLogout() {
-    await signOut(auth);   // Função para fazer logout do usuário no Firebase
+    await signOut(auth); // Função para fazer logout do usuário no Firebase
 
-    setUser(false);   // Setando o estado de user como false para não exibir os detalhes do usuário na tela
-    setUserDetails({});   // Limpando os detalhes do usuário no estado userDetails
+    setUser(false); // Setando o estado de user como false para não exibir os detalhes do usuário na tela
+    setUserDetails({}); // Limpando os detalhes do usuário no estado userDetails
   }
 
   return (
     <div className="App">
       <h1>ReactJS + Firebase</h1>
 
-      {user && (     // Verificando se o usuário esta logado para exibir os detalhes do usuário (user) e true (visualizacao condicional)
+      {user && ( // Verificando se o usuário esta logado para exibir os detalhes do usuário (user) e true (visualizacao condicional)
         <div>
           <strong>Seja bem-vindo(a) (Você esta logado!)</strong> <br />
-          <span> UID: {userDetails.uid} - Email: {userDetails.email}</span> <br />
+          <span>
+            {" "}
+            UID: {userDetails.uid} - Email: {userDetails.email}
+          </span>{" "}
+          <br />
           <button onClick={fazerLogout}>Sair da conta</button>
         </div>
       )}
