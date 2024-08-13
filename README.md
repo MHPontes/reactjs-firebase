@@ -1,4 +1,4 @@
-## Firestore Ecommerce - Projeto do Curso React JS Udemy
+## Firebase - Projeto do Curso React JS Udemy
 Este projeto foi desenvolvido durante o curso React JS do zero ao avançado na prática na Udemy: https://www.udemy.com/course/curso-reactjs/ 
 
 Funcionalidades
