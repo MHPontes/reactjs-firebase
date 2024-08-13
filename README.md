@@ -16,10 +16,11 @@ Pré-requisitos
 Node.js e npm instalados. Verifique a versão com node -v e npm -v.
 Um gerenciador de pacotes como yarn ou npm.
 Uma conta Firebase configurada com um projeto.
-Passo a Passo
-Clone o Repositório:
-git clone [https://github.com/seu-usuario/firestore-ecommerce.git](https://github.com/MHPontes/reactjs-firebase)
-cd firestore-ecommerce
+
+## Passo a Passo
+
+Clone o Repositório.
+
 
 ## Instale as Dependências:
 
