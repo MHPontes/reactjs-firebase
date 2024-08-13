@@ -18,7 +18,7 @@ Um gerenciador de pacotes como yarn ou npm.
 Uma conta Firebase configurada com um projeto.
 Passo a Passo
 Clone o Repositório:
-git clone https://github.com/seu-usuario/firestore-ecommerce.git
+git clone [https://github.com/seu-usuario/firestore-ecommerce.git](https://github.com/MHPontes/reactjs-firebase)
 cd firestore-ecommerce
 
 ## Instale as Dependências:
