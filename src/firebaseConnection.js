@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 
 const firebaseConfig = {      // Configurações do Firebase, que são obtidas no momento da criação do projeto no Firebase
@@ -23,5 +24,6 @@ const firebaseConfig = {      // Configurações do Firebase, que são obtidas n
 const firebaseApp = initializeApp(firebaseConfig);   // Iniciando o Firebase com as configurações do firebaseConfig
 
 const db = getFirestore(firebaseApp);  // Iniciando o Firestore com as configurações do firebaseApp
+const auth = getAuth(firebaseApp);    // Iniciando o Auth com as configurações do firebaseApp
 
-export { db };   // Exportando o db para ser utilizado em outros arquivos
+export { db, auth };   // Exportando o db para ser utilizado em outros arquivos

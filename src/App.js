@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { db } from "./firebaseConnection"; // Importando o db para inserir dados no Firestore
+import { db, auth } from "./firebaseConnection"; // Importando o db para inserir dados no Firestore
 import {
   addDoc,
   collection,
@@ -10,19 +10,23 @@ import {
   onSnapshot,
 } from "firebase/firestore"; // Importando o setDoc para inserir dados no Firestore
 import "./App.css";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 function App() {
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
   const [idPost, setIdPost] = useState("");
 
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+
   const [posts, setPosts] = useState([]); // Criando um estado para armazenar os posts que sera uma lista de posts
 
   useEffect(() => {
     // useEffect e uma função que e disparada toda vez que o componente e montado, passando um array vazio para ser disparado apenas uma vez
     async function loadPosts() {
-    const unsub = onSnapshot(collection(db, "posts"), (snapshot) => {
-         let listaPost = []; // Criando uma lista vazia
+      const unsub = onSnapshot(collection(db, "posts"), (snapshot) => {
+        let listaPost = []; // Criando uma lista vazia
 
         snapshot.forEach((doc) => {
           // Percorrendo os documentos da coleção com forEach e adicionando na lista
@@ -35,11 +39,10 @@ function App() {
         });
 
         setPosts(listaPost); // Setando o estado de posts na lista
-    })
-  }
+      });
+    }
 
-    loadPosts();   // Chamando a função loadPosts para carregar os posts no Firestore e setar no estado de posts no useEffect
-
+    loadPosts(); // Chamando a função loadPosts para carregar os posts no Firestore e setar no estado de posts no useEffect
   }, []);
 
   async function handleAdd() {
@@ -137,11 +140,57 @@ function App() {
       });
   }
 
+  async function novoUsuario() {     // Função para criar um novo usuário no Firebase
+    await createUserWithEmailAndPassword(auth, email, senha)    // Função para criar um novo usuário no Firebase, passando o email e a senha 
+
+      .then(() => {
+      
+        console.log("Usuário cadastrado com sucesso!");  
+
+        setEmail("");
+        setSenha("");
+      })
+      .catch((error) => {
+      
+        if (error.code === "auth/email-already-in-use") {
+          alert("Email já cadastrado!");
+
+        } else if (error.code === "auth/weak-password") {
+          alert("Senha muito fraca.");
+        }
+      });
+  }
+
   return (
     <div className="App">
       <h1>ReactJS + Firebase</h1>
 
       <div className="container">
+        <h2>Usuarios</h2>
+        <label>Email</label>
+        <input
+          placeholder="Digite um email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />{" "}
+        <br />
+        <label>Senha</label>
+        <input
+          placeholder="Digite uma senha"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+        />{" "}
+      </div>
+
+      <button onClick={novoUsuario}>Cadastrar</button>
+
+      <br />
+      <br />
+
+      <hr />
+
+      <div className="container">
+        <h2>Posts</h2>
         <label>Id do post:</label>
         <input
           type="text"
